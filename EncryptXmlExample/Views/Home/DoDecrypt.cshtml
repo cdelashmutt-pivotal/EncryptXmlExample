@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Let's Encrypt!";
+    var instance = System.Environment.GetEnvironmentVariable("CF_INSTANCE_INDEX");
+    string InstanceText = "";
+    if (instance != null)
+    {
+        InstanceText = "on Instance " + instance;
+    }
+}
+
+<div class="jumbotron">
+    <h1>Decrypted @InstanceText</h1>
+</div>
+
+@Html.DisplayForModel()
