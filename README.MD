@@ -155,3 +155,5 @@ And now, you can access your application, load your cert, and decrypt on any ins
 
 ## How does this work?
 Basically the code loads the cert just before it is needed from Memory/Redis into the "Current User" cert store location, and the "My" store name.  This is safe as every app instance running on a Windows Diego cell in CF get's its own user generated for that instance at the time the container for that app instance is created.  This means that the "Current User" cert store will live only as long as the app is running, and will be destroyed if that container is destroyed.
+
+Have a look at the EncryptXmlExample.Controllers.HomeController.DoDecrypt method for how the cert gets loaded "just in time".
