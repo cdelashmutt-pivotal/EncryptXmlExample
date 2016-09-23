@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EncryptXmlExample.Services
 {
-    interface ICertStore
+    public interface ICertStore
     {
         Tuple<String, byte[]> this[String index] { get; set; }
         IEnumerable<string> Keys { get; }

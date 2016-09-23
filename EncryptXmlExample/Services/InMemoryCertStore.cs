@@ -5,7 +5,7 @@ using System.Web;
 
 namespace EncryptXmlExample.Services
 {
-    public class CertStore : ICertStore
+    public class InMemoryCertStore : ICertStore
     {
         private Dictionary<String, Tuple<String,byte[]>> certStore = new Dictionary<string, Tuple<String,byte[]>>();
 

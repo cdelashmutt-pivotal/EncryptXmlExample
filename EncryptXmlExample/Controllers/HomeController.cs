@@ -1,5 +1,8 @@
 ﻿using EncryptXmlExample.Services;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
+using NLog;
+using Steeltoe.Extensions.Configuration.CloudFoundry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,12 +19,12 @@ namespace EncryptXmlExample.Controllers
 
     public class HomeController : Controller
     {
-        private static ICertStore _certStore = GetCertStore();
+        private static readonly Logger Nlog = LogManager.GetCurrentClassLogger();
 
         public ActionResult Index()
         {
             List<SelectListItem> items = new List<SelectListItem>();
-            foreach(string key in _certStore.Keys)
+            foreach(string key in CertStoreFactory.Instance.Keys)
             {
                 items.Add( new SelectListItem { Text = key, Value = key } );
             }
@@ -37,8 +40,8 @@ namespace EncryptXmlExample.Controllers
             {
                 fileData = binaryReader.ReadBytes(CertificateFile.ContentLength);
             }
-            
-            _certStore[CertificateName] = Tuple.Create(Password, fileData);
+
+            CertStoreFactory.Instance[CertificateName] = Tuple.Create(Password, fileData);
             return RedirectToAction("Index", "Home");
         }
 
@@ -48,7 +51,7 @@ namespace EncryptXmlExample.Controllers
         public ActionResult DoDecrypt(String EncryptedData)
         {
             //First lookup your cert/key.  Again, this is just an example.
-            X509Certificate2 cert = new X509Certificate2(_certStore["TestEncrypt"].Item2, _certStore["TestEncrypt"].Item1);
+            X509Certificate2 cert = new X509Certificate2(CertStoreFactory.Instance["TestEncrypt"].Item2, CertStoreFactory.Instance["TestEncrypt"].Item1);
 
             //Put the cert into the personal store of the user Cloud Foundry dynamically 
             //created to run this app.
@@ -66,41 +69,6 @@ namespace EncryptXmlExample.Controllers
             eXml.DecryptDocument();
 
             return View((object)xmlDoc.OuterXml);
-        }
-
-        private static ICertStore GetCertStore()
-        {
-            string redisConnectionString = GetRedisConnectionString();
-            if (redisConnectionString != null)
-            {
-                return new RedisCertStore(redisConnectionString);
-            }
-            else
-            {
-                return new CertStore();
-            }
-        }
-
-        private static string GetRedisConnectionString()
-        {
-            VcapServices vcap = VcapServices.Instance();
-
-            if (vcap.IsCF)
-            {
-                JToken service = vcap.GetService("certstore");
-
-                if (service != null)
-                {
-                    JToken creds = service["credentials"];
-                    return String.Format("{0}:{1},password={2}"
-                        , creds["host"]
-                        , creds["port"]
-                        , creds["password"]
-                    );
-                }
-            }
-
-            return null;
         }
     }
 }
